@@ -1,6 +1,6 @@
-import javafx.util.Pair;
-
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Random;
 
 /**
@@ -56,13 +56,69 @@ public class DecisionTree {
         return leafNode.getProbabilities();
     }
 
-    private DecisionTreeNode styddyNode(DecisionTreeNode node, ArrayList<Pair<FeaturesVector, Integer>> objects, int depth) {
+    double getJiniIndex(ArrayList<ObjectWithClass> objects) {
+        double J = 0.0;
+        double[] P = new double[numberOfClasses];
+        for (int i = 0; i < numberOfClasses; ++i) {
+            P[i] = 0.0;
+        }
+        for (int i = 0; i < objects.size(); ++i) {
+            P[objects.get(i).getClassNumber()] += 1.0 / (double)objects.size();
+        }
+        for (int i = 0; i < numberOfClasses; ++i) {
+            J += P[i] * P[i];
+        }
+        J = 1.0 - J;
+        return J;
+    }
+
+    private SeparatingPlane getSeparatingPlane(ArrayList<ObjectWithClass> objects) {
+        SeparatingPlane bestSeparatingPlane = new SeparatingPlane();
+        double bestInf = 1e18;
+        for (int d = 0; d < dimentions; ++d) {
+            int finalD = d;
+            Collections.sort(objects,
+                    new Comparator<ObjectWithClass>() {
+                        @Override
+                        public int compare(ObjectWithClass obj1, ObjectWithClass obj2) {
+                            double coord1 = obj1.getFeaturesVector().getFeature(finalD);
+                            double coord2 = obj2.getFeaturesVector().getFeature(finalD);
+                            return coord1 < coord2 ? -1 : (coord1 == coord2 ? 0 : 1);
+                        }
+                    }
+            );
+            ArrayList<ObjectWithClass> leftObjects = new ArrayList<ObjectWithClass>();
+            ArrayList<ObjectWithClass> rightObjects = new ArrayList<ObjectWithClass>();
+            for (int i = 0; i < objects.size(); ++i) {
+                rightObjects.add(objects.get(objects.size() - i - 1));
+            }
+            int i = 0;
+            while (i <= objects.size()) {
+                double Inf = ((double) leftObjects.size()) * getJiniIndex(leftObjects) +
+                        ((double) rightObjects.size()) * getJiniIndex(rightObjects);
+                if (Inf < bestInf) {
+                    bestInf = Inf;
+                    bestSeparatingPlane = new SeparatingPlane(d, objects.get(i).getFeaturesVector().getFeature(d));
+                }
+                double curCoord = objects.get(i).getFeaturesVector().getFeature(d);
+                while (i + 1 <= objects.size() && objects.get(i + 1).getFeaturesVector().getFeature(d) == curCoord) {
+                    leftObjects.add(rightObjects.get(rightObjects.size() - 1));
+                    rightObjects.remove(rightObjects.size() - 1);
+                    ++i;
+                }
+                ++i;
+            }
+        }
+        return bestSeparatingPlane;
+    }
+
+    private DecisionTreeNode styddyNode(DecisionTreeNode node, ArrayList<ObjectWithClass> objects, int depth) {
         boolean isLeaf = (depth > maxDepth);
         ArrayList<Double> probabilities = new ArrayList<Double>(numberOfClasses);
         for (int i = 0; i < numberOfClasses; ++i)
             probabilities.set(i, new Double(.0));
         for (int i = 0; i < objects.size(); ++i) {
-            probabilities.set(objects.get(i).getValue(), probabilities.get(objects.get(i).getValue()) + 1.);
+            probabilities.set(objects.get(i).getClassNumber(), probabilities.get(objects.get(i).getClassNumber()) + 1.);
         }
         for (int i = 0; i < numberOfClasses; ++i) {
             probabilities.set(i, probabilities.get(i) / (double) numberOfClasses);
@@ -72,15 +128,15 @@ public class DecisionTree {
         if (isLeaf) {
             node.setIsLeaf(true);
         } else {
-            int currentDimentionPlot = getRandomClassNumber();
-            double treshold = rnd.nextDouble();
-            node.setTresholdValue(treshold);
+            SeparatingPlane currentSeparatingPlane = getSeparatingPlane(objects);
+            node.setSeparatingPlane(currentSeparatingPlane);
             node.addChildren(new DecisionTreeNode(dimentions, numberOfClasses), new DecisionTreeNode(dimentions, numberOfClasses));
-            ArrayList<Pair<FeaturesVector, Integer>> leftObjects = new ArrayList<>(), rightObjects = new ArrayList<>();
+            ArrayList<ObjectWithClass> leftObjects = new ArrayList<>();
+            ArrayList<ObjectWithClass> rightObjects = new ArrayList<>();
             for (int i = 0; i < objects.size(); ++i) {
-                if (objects.get(i).getKey().getFeature(currentDimentionPlot) <= treshold) {
+                if (node.nextNodeIsLeft(objects.get(i).getFeaturesVector())) {
                     leftObjects.add(objects.get(i));
-                } else  {
+                } else {
                     rightObjects.add(objects.get(i));
                 }
             }
@@ -90,7 +146,7 @@ public class DecisionTree {
         return node;
     }
 
-    public void studdy(ArrayList<Pair<FeaturesVector, Integer>> objects) {
+    public void studdy(ArrayList<ObjectWithClass> objects) {
         rootNode = styddyNode(rootNode, objects, 0);
     }
 

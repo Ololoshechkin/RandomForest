@@ -6,8 +6,7 @@ import java.util.ArrayList;
 public class DecisionTreeNode {
     private int dimentions;
     private int numberOfClasses;
-    private int plotDimensionNumber;
-    private double tresholdValue;
+    private SeparatingPlane separatingPlane;
     private DecisionTreeNode leftTreeNode, rightTreeNode;
     private boolean isLeaf;
     private ArrayList<Double> probabilities;
@@ -15,8 +14,7 @@ public class DecisionTreeNode {
     DecisionTreeNode(int _dimentions, int _numberOfClasses) {
         dimentions = _dimentions;
         numberOfClasses = _numberOfClasses;
-        plotDimensionNumber = 0;
-        tresholdValue = .0;
+        separatingPlane = new SeparatingPlane();
         leftTreeNode = null;
         rightTreeNode = null;
         isLeaf = false;
@@ -25,11 +23,10 @@ public class DecisionTreeNode {
             probabilities.set(i, new Double(0.0));
     }
 
-    DecisionTreeNode(int _dimentions, int _numberOfClasses, int _plotDimension, boolean _isLeaf) {
+    DecisionTreeNode(int _dimentions, int _numberOfClasses, boolean _isLeaf) {
         dimentions = _dimentions;
         numberOfClasses = _numberOfClasses;
-        plotDimensionNumber = _plotDimension;
-        tresholdValue = .0;
+        separatingPlane = new SeparatingPlane();
         leftTreeNode = null;
         rightTreeNode = null;
         isLeaf = _isLeaf;
@@ -38,11 +35,10 @@ public class DecisionTreeNode {
             probabilities.set(i, new Double(0.0));
     }
 
-    DecisionTreeNode(int _dimentions, int _numberOfClasses ,int _plotDimension, boolean _isLeaf, double _tresholdValue) {
+    DecisionTreeNode(int _dimentions, int _numberOfClasses, boolean _isLeaf, SeparatingPlane _separatingPlane) {
         dimentions = _dimentions;
         numberOfClasses = _numberOfClasses;
-        plotDimensionNumber = _plotDimension;
-        tresholdValue = _tresholdValue;
+        separatingPlane = _separatingPlane;
         leftTreeNode = null;
         rightTreeNode = null;
         isLeaf = _isLeaf;
@@ -51,11 +47,10 @@ public class DecisionTreeNode {
             probabilities.set(i, new Double(0.0));
     }
 
-    DecisionTreeNode(int _dimentions, int _numberOfClasses, int _plotDimension, boolean _isLeaf, int _answer) {
+    DecisionTreeNode(int _dimentions, int _numberOfClasses, boolean _isLeaf, int _answer) {
         dimentions = _dimentions;
         numberOfClasses = _numberOfClasses;
-        plotDimensionNumber = _plotDimension;
-        tresholdValue = .0;
+        separatingPlane = new SeparatingPlane();
         leftTreeNode = null;
         rightTreeNode = null;
         isLeaf = _isLeaf;
@@ -67,16 +62,14 @@ public class DecisionTreeNode {
     DecisionTreeNode(
             int _dimentions,
             int _numberOfClasses,
-            int _plotDimension,
-            double _tresholdValue,
+            SeparatingPlane _separatingPlane,
             boolean _isLeaf,
             DecisionTreeNode _leftTreeNode,
             DecisionTreeNode _rightTreeNode
     ) {
         dimentions = _dimentions;
         numberOfClasses = _numberOfClasses;
-        plotDimensionNumber = _plotDimension;
-        tresholdValue = _tresholdValue;
+        separatingPlane = _separatingPlane;
         leftTreeNode = _leftTreeNode;
         rightTreeNode = _rightTreeNode;
         isLeaf = _isLeaf;
@@ -89,10 +82,14 @@ public class DecisionTreeNode {
         return isLeaf;
     }
 
-    public DecisionTreeNode getNextTreeNode(FeaturesVector fitures) {
-        if (fitures.getFeature(plotDimensionNumber) <= tresholdValue)
+    public DecisionTreeNode getNextTreeNode(FeaturesVector features) {
+        if (features.getFeature(separatingPlane.getDimentionNumber()) <= separatingPlane.getTresholdValue())
             return leftTreeNode;
         return rightTreeNode;
+    }
+
+    public boolean nextNodeIsLeft(FeaturesVector features) {
+        return (features.getFeature(separatingPlane.getDimentionNumber()) <= separatingPlane.getTresholdValue());
     }
 
     public int getAnswer() {
@@ -124,7 +121,15 @@ public class DecisionTreeNode {
     }
 
     public void setTresholdValue(double treshold) {
-        tresholdValue = treshold;
+        separatingPlane.setTresholdValue(treshold);
+    }
+
+    public void setPlaneDimentionNumber(int dimentionNmb) {
+        separatingPlane.setDimentionNumber(dimentionNmb);
+    }
+
+    public void setSeparatingPlane(SeparatingPlane plane) {
+        separatingPlane = plane;
     }
 
     public void addChildren(DecisionTreeNode leftChild, DecisionTreeNode rightChild) {
