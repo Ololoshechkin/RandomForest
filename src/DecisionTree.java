@@ -33,7 +33,7 @@ public class DecisionTree {
         rootNode = new DecisionTreeNode(dimentions, numberOfClasses);
     }
 
-    private DecisionTreeNode goDownToLeaf(FituresVector object) {
+    private DecisionTreeNode goDownToLeaf(FeaturesVector object) {
         DecisionTreeNode currentNode = rootNode;
         while (!currentNode.isLeaf()) {
             currentNode = currentNode.getNextTreeNode(object);
@@ -41,22 +41,22 @@ public class DecisionTree {
         return currentNode;
     }
 
-    public int getClassByObject(FituresVector object) {
+    public int getClassByObject(FeaturesVector object) {
         DecisionTreeNode leafNode = goDownToLeaf(object);
         return leafNode.getAnswer();
     }
 
-    public double getProbability(FituresVector object, int classNumber) {
+    public double getProbability(FeaturesVector object, int classNumber) {
         DecisionTreeNode leafNode = goDownToLeaf(object);
         return leafNode.getProbability(classNumber);
     }
 
-    public ArrayList<Double> getProbabilities(FituresVector object) {
+    public ArrayList<Double> getProbabilities(FeaturesVector object) {
         DecisionTreeNode leafNode = goDownToLeaf(object);
         return leafNode.getProbabilities();
     }
 
-    private DecisionTreeNode styddyNode(DecisionTreeNode node, ArrayList<Pair<FituresVector, Integer>> objects, int depth) {
+    private DecisionTreeNode styddyNode(DecisionTreeNode node, ArrayList<Pair<FeaturesVector, Integer>> objects, int depth) {
         boolean isLeaf = (depth > maxDepth);
         ArrayList<Double> probabilities = new ArrayList<Double>(numberOfClasses);
         for (int i = 0; i < numberOfClasses; ++i)
@@ -76,9 +76,9 @@ public class DecisionTree {
             double treshold = rnd.nextDouble();
             node.setTresholdValue(treshold);
             node.addChildren(new DecisionTreeNode(dimentions, numberOfClasses), new DecisionTreeNode(dimentions, numberOfClasses));
-            ArrayList<Pair<FituresVector, Integer>> leftObjects = new ArrayList<>(), rightObjects = new ArrayList<>();
+            ArrayList<Pair<FeaturesVector, Integer>> leftObjects = new ArrayList<>(), rightObjects = new ArrayList<>();
             for (int i = 0; i < objects.size(); ++i) {
-                if (objects.get(i).getKey().getFiture(currentDimentionPlot) <= treshold) {
+                if (objects.get(i).getKey().getFeature(currentDimentionPlot) <= treshold) {
                     leftObjects.add(objects.get(i));
                 } else  {
                     rightObjects.add(objects.get(i));
@@ -90,7 +90,7 @@ public class DecisionTree {
         return node;
     }
 
-    public void studdy(ArrayList<Pair<FituresVector, Integer>> objects) {
+    public void studdy(ArrayList<Pair<FeaturesVector, Integer>> objects) {
         rootNode = styddyNode(rootNode, objects, 0);
     }
 

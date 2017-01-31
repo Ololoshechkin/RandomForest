@@ -89,8 +89,8 @@ public class DecisionTreeNode {
         return isLeaf;
     }
 
-    public DecisionTreeNode getNextTreeNode(FituresVector fitures) {
-        if (fitures.getFiture(plotDimensionNumber) <= tresholdValue)
+    public DecisionTreeNode getNextTreeNode(FeaturesVector fitures) {
+        if (fitures.getFeature(plotDimensionNumber) <= tresholdValue)
             return leftTreeNode;
         return rightTreeNode;
     }
