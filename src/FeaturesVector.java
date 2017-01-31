@@ -5,12 +5,15 @@ import java.util.Dictionary;
  * Created by Vadim on 26.01.17.
  */
 public class FeaturesVector {
-    private int dimension;
+    private int dimensions;
     private ArrayList<Double> featuresList;
 
     public void setDimension(int n) {
-        dimension = n;
-        featuresList = new ArrayList<Double>(dimension);
+        dimensions = n;
+        featuresList = new ArrayList<>();
+        for (int i = 0; i < dimensions; ++i) {
+            featuresList.add(new Double(0.0));
+        }
     }
 
     public void setFeatures(ArrayList<Double> features) {
@@ -22,18 +25,27 @@ public class FeaturesVector {
     }
 
     FeaturesVector() {
-        dimension = 1;
-        featuresList = new ArrayList<Double>(dimension);
+        dimensions = 1;
+        featuresList = new ArrayList<>();
+        featuresList.add(new Double(0.0));
     }
 
     FeaturesVector(int n) {
-        dimension = n;
-        featuresList = new ArrayList<Double>(dimension);
+        dimensions = n;
+        featuresList = new ArrayList<>();
+        for (int i = 0; i < dimensions; ++i) {
+            featuresList.add(new Double(0.0));
+        }
     }
 
     FeaturesVector(int n, ArrayList<Double> features) {
-        dimension = n;
+        dimensions = n;
         featuresList = features;
+    }
+
+    FeaturesVector(FeaturesVector prototype) {
+        dimensions = prototype.dimensions;
+        featuresList = new ArrayList<>(prototype.getFeaturesList());
     }
 
     public double getFeature(int i) {

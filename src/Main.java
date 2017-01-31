@@ -16,17 +16,36 @@ public class Main {
         DecisionTree decisionTree = new DecisionTree();
         decisionTree.setDimentions(2);
         decisionTree.setNumberOfClasses(2);
-        ArrayList<ObjectWithClass> points = new ArrayList<>(1000);
+        ArrayList<ObjectWithClass> points = new ArrayList<>();
         for (int i = 0; i < 1000; ++i) {
             double x = rnd.nextDouble(), y = rnd.nextDouble();
-            int classNmb = y <= x ? 1 : 0;
+            int classNmb = (x * x + y * y <= 0.5 ? 1 : 0);
             FeaturesVector curFeaturesVector = new FeaturesVector(2);
             curFeaturesVector.setFeature(0, x);
             curFeaturesVector.setFeature(1, y);
-            points.set(i, new ObjectWithClass(FeaturesVector, classNmb));
+            points.add(new ObjectWithClass(curFeaturesVector, classNmb));
         }
+        System.out.println("wait, please...");
         decisionTree.studdy(points);
-                
+        int goodAnswers = 0;
+        for (int i = 0; i < 5000; ++i) {
+            double x = rnd.nextDouble(), y = rnd.nextDouble();
+            int expectedClassNmb = (x <= y ? 1 : 0);
+            FeaturesVector curFeaturesVector = new FeaturesVector(2);
+            curFeaturesVector.setFeature(0, x);
+            curFeaturesVector.setFeature(1, y);
+            int curAns = decisionTree.getClassByObject(curFeaturesVector);
+            goodAnswers += (curAns == expectedClassNmb ? 1 : 0);
+        }
+        System.out.println("correct : " + 100.0 * (double) goodAnswers / 5000.0 + "%");
+        System.out.println("now start :");
+        while (true) {
+            double x = sc.nextDouble(), y = sc.nextDouble();
+            FeaturesVector obj = new FeaturesVector(2);
+            obj.setFeature(0, x);
+            obj.setFeature(1, y);
+            System.out.println("class = " + decisionTree.getClassByObject(obj));
+        }
     }
 
 }

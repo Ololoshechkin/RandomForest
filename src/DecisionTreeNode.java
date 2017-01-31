@@ -18,45 +18,10 @@ public class DecisionTreeNode {
         leftTreeNode = null;
         rightTreeNode = null;
         isLeaf = false;
-        probabilities = new ArrayList<Double>(numberOfClasses);
-        for (int i = 0; i < numberOfClasses; ++i)
-            probabilities.set(i, new Double(0.0));
-    }
-
-    DecisionTreeNode(int _dimentions, int _numberOfClasses, boolean _isLeaf) {
-        dimentions = _dimentions;
-        numberOfClasses = _numberOfClasses;
-        separatingPlane = new SeparatingPlane();
-        leftTreeNode = null;
-        rightTreeNode = null;
-        isLeaf = _isLeaf;
-        probabilities = new ArrayList<Double>(numberOfClasses);
-        for (int i = 0; i < numberOfClasses; ++i)
-            probabilities.set(i, new Double(0.0));
-    }
-
-    DecisionTreeNode(int _dimentions, int _numberOfClasses, boolean _isLeaf, SeparatingPlane _separatingPlane) {
-        dimentions = _dimentions;
-        numberOfClasses = _numberOfClasses;
-        separatingPlane = _separatingPlane;
-        leftTreeNode = null;
-        rightTreeNode = null;
-        isLeaf = _isLeaf;
-        probabilities = new ArrayList<Double>(numberOfClasses);
-        for (int i = 0; i < numberOfClasses; ++i)
-            probabilities.set(i, new Double(0.0));
-    }
-
-    DecisionTreeNode(int _dimentions, int _numberOfClasses, boolean _isLeaf, int _answer) {
-        dimentions = _dimentions;
-        numberOfClasses = _numberOfClasses;
-        separatingPlane = new SeparatingPlane();
-        leftTreeNode = null;
-        rightTreeNode = null;
-        isLeaf = _isLeaf;
-        probabilities = new ArrayList<Double>(numberOfClasses);
-        for (int i = 0; i < numberOfClasses; ++i)
-            probabilities.set(i, new Double(0.0));
+        probabilities = new ArrayList<>();
+        for (int i = 0; i < numberOfClasses; ++i) {
+            probabilities.add(new Double(0.0));
+        }
     }
 
     DecisionTreeNode(
@@ -73,9 +38,10 @@ public class DecisionTreeNode {
         leftTreeNode = _leftTreeNode;
         rightTreeNode = _rightTreeNode;
         isLeaf = _isLeaf;
-        probabilities = new ArrayList<Double>(numberOfClasses);
-        for (int i = 0; i < numberOfClasses; ++i)
-            probabilities.set(i, new Double(0.0));
+        probabilities = new ArrayList<>();
+        for (int i = 0; i < numberOfClasses; ++i) {
+            probabilities.add(new Double(0.0));
+        }
     }
 
     public boolean isLeaf() {

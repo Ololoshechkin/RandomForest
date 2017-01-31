@@ -16,6 +16,11 @@ public class ObjectWithClass {
         classNumber = _classNumber;
     }
 
+    ObjectWithClass(ObjectWithClass prototype) {
+        featuresVector = new FeaturesVector(prototype.getFeaturesVector());
+        classNumber = prototype.classNumber;
+    }
+
     public void setFeaturesVector(FeaturesVector _featuresVector) {
         featuresVector = _featuresVector;
     }
