@@ -95,43 +95,46 @@ public class VisualiserWindow extends JFrame implements Runnable {
 
     private void paintAreas() {
         Graphics g = getGraphics();
-        for (int i = 0; i < points.size(); ++i) {
-            int x = (int) (points.get(i).getFeaturesVector().getFeature(PlaneAxe1) * Width);
-            int y = (int) (points.get(i).getFeaturesVector().getFeature(PlaneAxe2) * Height);
-            int currentClass = decisionTree.getClassByObject(points.get(i).getFeaturesVector());
-            if (currentClass == 0) {
-                g.setColor(new Color(131, 41, 23));
+        for (int x = 0; x <= Width; x += 2) {
+            for (int y = 0; y <= Height; y += 2) {
+                FeaturesVector features = new FeaturesVector(2);
+                features.setFeature(0, (double) x / (double) Width);
+                features.setFeature(1, (double) y / (double) Height);
+                int currentClass = decisionTree.getClassByObject(features);
+                if (currentClass == 0) {
+                    g.setColor(new Color(131, 41, 23));
+                    Rectangle rect = getRect(x, y);
+                    g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
+                    continue;
+                }
+                if (currentClass == 1) {
+                    g.setColor(new Color(0, 0, 113));
+                    Rectangle rect = getRect(x, y);
+                    g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
+                    continue;
+                }
+                if (currentClass == 2) {
+                    g.setColor(new Color(118, 1, 101));
+                    Rectangle rect = getRect(x, y);
+                    g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
+                    continue;
+                }
+                if (currentClass == 3) {
+                    g.setColor(new Color(2, 84, 113));
+                    Rectangle rect = getRect(x, y);
+                    g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
+                    continue;
+                }
+                if (currentClass == 4) {
+                    g.setColor(new Color(0, 113, 41));
+                    Rectangle rect = getRect(x, y);
+                    g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
+                    continue;
+                }
+                g.setColor(new Color(130, 73, 5));
                 Rectangle rect = getRect(x, y);
                 g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
-                continue;
             }
-            if (currentClass == 1) {
-                g.setColor(new Color(0, 0, 113));
-                Rectangle rect = getRect(x, y);
-                g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
-                continue;
-            }
-            if (currentClass == 2) {
-                g.setColor(new Color(118, 1, 101));
-                Rectangle rect = getRect(x, y);
-                g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
-                continue;
-            }
-            if (currentClass == 3) {
-                g.setColor(new Color(2, 84, 113));
-                Rectangle rect = getRect(x, y);
-                g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
-                continue;
-            }
-            if (currentClass == 4) {
-                g.setColor(new Color(0, 113, 41));
-                Rectangle rect = getRect(x, y);
-                g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
-                continue;
-            }
-            g.setColor(new Color(130, 73, 5));
-            Rectangle rect = getRect(x, y);
-            g.fillRect((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
         }
     }
 
@@ -141,20 +144,14 @@ public class VisualiserWindow extends JFrame implements Runnable {
         Height = height;
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setBounds(x0, y0, Width, Height);
+        setResizable(false);
         setVisible(true);
     }
 
     @Override
     public void run() {
-        while (true) {
-            paintAreas();
-            drawPoints();
-            drawSeparatingPlanes();
-            try {
-                Thread.currentThread().sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        paintAreas();
+        drawPoints();
+        drawSeparatingPlanes();
     }
 }
