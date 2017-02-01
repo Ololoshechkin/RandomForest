@@ -9,14 +9,20 @@ public class DecisionTree {
     private int dimentions;
     private int numberOfClasses;
     private DecisionTreeNode rootNode;
-    private int maxDepth = 100;
+    private int maxDepth = 500;
+    private double tresholdProbability = 0.99;
     private Random rnd;
     private double infinity = 1e18;
+    private ArrayList<Integer> allowedDimentions;
 
     DecisionTree() {
         dimentions = 1;
         numberOfClasses = 1;
         rootNode = new DecisionTreeNode(dimentions, numberOfClasses);
+        allowedDimentions = new ArrayList<>();
+        for (int i = 0; i < dimentions; ++i) {
+            allowedDimentions.add(new Integer(i));
+        }
     }
 
     private int getRandomClassNumber() {
@@ -26,6 +32,10 @@ public class DecisionTree {
     public void setDimentions(int _dimentions) {
         dimentions = _dimentions;
         rootNode = new DecisionTreeNode(dimentions, numberOfClasses);
+        allowedDimentions = new ArrayList<>();
+        for (int i = 0; i < dimentions; ++i) {
+            allowedDimentions.add(new Integer(i));
+        }
     }
 
     public void setNumberOfClasses(int _numberOfClasses) {
@@ -76,7 +86,7 @@ public class DecisionTree {
     private SeparatingPlane getSeparatingPlane(ArrayList<ObjectWithClass> objects) {
         SeparatingPlane bestSeparatingPlane = new SeparatingPlane();
         double bestInf = -infinity;
-        for (int d = 0; d < dimentions; ++d) {
+        for (int d : allowedDimentions) {
             int finalD = d;
             Collections.sort(objects,
                     new Comparator<ObjectWithClass>() {
@@ -142,11 +152,8 @@ public class DecisionTree {
         return bestSeparatingPlane;
     }
 
-    private DecisionTreeNode styddyNode(DecisionTreeNode node, ArrayList<ObjectWithClass> objects, int depth) {
+    private DecisionTreeNode stydyNode(DecisionTreeNode node, ArrayList<ObjectWithClass> objects, int depth) {
         boolean isLeaf = (depth > maxDepth || objects.isEmpty());
-        if (isLeaf) {
-            System.out.println("depth");
-        }
         ArrayList<Double> probabilities = new ArrayList<>();
         for (int i = 0; i < numberOfClasses; ++i) {
             probabilities.add(new Double(.0));
@@ -161,9 +168,9 @@ public class DecisionTree {
         for (int i = 0; i < numberOfClasses; ++i) {
             probabilities.set(i, probabilities.get(i) / (double) objects.size());
             //System.out.print("P[" + i + "] = " + probabilities.get(i) + " ");
-            if (probabilities.get(i) > 0.99) {
+            if (probabilities.get(i) > tresholdProbability) {
                 isLeaf = true;
-                //System.out.println("> 0.99 in depth : " + depth + " , and equals : " + probabilities.get(i) + " (for class : " + i + ")");
+                //System.out.println(" > tresholdProbability in depth : " + depth + " , and equals : " + probabilities.get(i) + " (for class : " + i + ")");
             }
         }
         //System.out.println();
@@ -187,14 +194,14 @@ public class DecisionTree {
                     rightObjects.add(new ObjectWithClass(objects.get(i)));
                 }
             }
-            node.setLeftChild(styddyNode(node.getLeftChild(), leftObjects, depth + 1));
-            node.setRightChild(styddyNode(node.getRightChild(), rightObjects, depth + 1));
+            node.setLeftChild(stydyNode(node.getLeftChild(), leftObjects, depth + 1));
+            node.setRightChild(stydyNode(node.getRightChild(), rightObjects, depth + 1));
         }
         return node;
     }
 
-    public void studdy(ArrayList<ObjectWithClass> objects) {
-        rootNode = styddyNode(rootNode, objects, 0);
+    public void study(ArrayList<ObjectWithClass> objects) {
+        rootNode = stydyNode(rootNode, objects, 0);
     }
 
     private double square(double x) {
@@ -217,6 +224,10 @@ public class DecisionTree {
         window.setDecisionTree(this);
         Thread windowThread = new Thread(window);
         windowThread.start();
+    }
+
+    public void setAllowedDimentions(ArrayList<Integer> _allowedDimentions) {
+        allowedDimentions = new ArrayList<Integer>(_allowedDimentions);
     }
 
 }
