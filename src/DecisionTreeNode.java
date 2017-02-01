@@ -98,6 +98,8 @@ public class DecisionTreeNode {
         separatingPlane = plane;
     }
 
+    public SeparatingPlane getSeparatingPlane() {return separatingPlane;}
+
     public void addChildren(DecisionTreeNode leftChild, DecisionTreeNode rightChild) {
         leftTreeNode = leftChild;
         rightTreeNode = rightChild;

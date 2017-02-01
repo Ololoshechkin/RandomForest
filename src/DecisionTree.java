@@ -1,3 +1,5 @@
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 /**
@@ -7,7 +9,7 @@ public class DecisionTree {
     private int dimentions;
     private int numberOfClasses;
     private DecisionTreeNode rootNode;
-    private int maxDepth = 20;
+    private int maxDepth = 100;
     private Random rnd;
     private double infinity = 1e18;
 
@@ -55,25 +57,25 @@ public class DecisionTree {
     }
 
     private double getJiniIndex(ArrayList<ObjectWithClass> objects, int l, int r) {
+        if (r == l - 1) return 0.0;
         double J = 0.0;
         double[] P = new double[numberOfClasses];
         for (int i = 0; i < numberOfClasses; ++i) {
             P[i] = 0.0;
         }
         for (int i = l; i <= r; ++i) {
-            P[objects.get(i).getClassNumber()] += 1.0 / (double) (r - l + 1);
+            P[objects.get(i).getClassNumber()] += 1.0;
         }
         for (int i = 0; i < numberOfClasses; ++i) {
-            J += square(P[i]);
+            J += square(P[i] / (double) (r - l + 1));
         }
         J = 1.0 - J;
-        //System.out.println("JiniIndex = " + J + " , obj.sz = " + (r - l + 1));
         return J;
     }
 
     private SeparatingPlane getSeparatingPlane(ArrayList<ObjectWithClass> objects) {
         SeparatingPlane bestSeparatingPlane = new SeparatingPlane();
-        double bestInf = infinity;
+        double bestInf = -infinity;
         for (int d = 0; d < dimentions; ++d) {
             int finalD = d;
             Collections.sort(objects,
@@ -106,9 +108,15 @@ public class DecisionTree {
             }*/
             int i = 0;
             while (i <= objects.size()) {
-                double Inf = ((double) i) * getJiniIndex(objects, 0, i - 1) +
-                        ((double) objects.size() - i) * getJiniIndex(objects, i, objects.size() - 1);
-                if (Inf < bestInf) {
+                double Inf = getJiniIndex(objects, 0, objects.size() - 1) - ((double) i) / ((double) objects.size()) *
+                        getJiniIndex(objects, 0, i - 1)  -
+                        ((double) objects.size() - i) / ((double) objects.size()) * getJiniIndex(objects, i, objects.size() - 1);
+                //System.out.println("Inf = " + Inf + " when i = " + i + " and |objects| : " + objects.size());
+                if (Inf != Inf) {
+                    Scanner sc = new Scanner(System.in);
+                    sc.next();
+                }
+                if (Inf > bestInf) {
                     bestInf = Inf;
                     bestSeparatingPlane = new SeparatingPlane(
                             d,
@@ -135,24 +143,30 @@ public class DecisionTree {
     }
 
     private DecisionTreeNode styddyNode(DecisionTreeNode node, ArrayList<ObjectWithClass> objects, int depth) {
-        boolean isLeaf = (depth > maxDepth);
+        boolean isLeaf = (depth > maxDepth || objects.isEmpty());
+        if (isLeaf) {
+            System.out.println("depth");
+        }
         ArrayList<Double> probabilities = new ArrayList<>();
         for (int i = 0; i < numberOfClasses; ++i) {
             probabilities.add(new Double(.0));
         }
         for (int i = 0; i < objects.size(); ++i) {
+            //System.out.println("class:" + objects.get(i).getClassNumber());
             probabilities.set(
                     objects.get(i).getClassNumber(),
-                    probabilities.get(objects.get(i).getClassNumber()) + 1.0 / (double) objects.size()
+                    probabilities.get(objects.get(i).getClassNumber()) + 1.0
             );
         }
         for (int i = 0; i < numberOfClasses; ++i) {
-            probabilities.set(i, probabilities.get(i) / (double) numberOfClasses);
-            if (probabilities.get(i) > .95) {
+            probabilities.set(i, probabilities.get(i) / (double) objects.size());
+            //System.out.print("P[" + i + "] = " + probabilities.get(i) + " ");
+            if (probabilities.get(i) > 0.99) {
                 isLeaf = true;
-                //System.out.println("> 0.95 in depth : " + depth + " , and equals : " + probabilities.get(i));
+                //System.out.println("> 0.99 in depth : " + depth + " , and equals : " + probabilities.get(i) + " (for class : " + i + ")");
             }
         }
+        //System.out.println();
         node.setProbabilities(probabilities);
         if (isLeaf) {
             node.setIsLeaf(true);
@@ -168,9 +182,9 @@ public class DecisionTree {
             ArrayList<ObjectWithClass> rightObjects = new ArrayList<>();
             for (int i = 0; i < objects.size(); ++i) {
                 if (node.nextNodeIsLeft(objects.get(i).getFeaturesVector())) {
-                    leftObjects.add(objects.get(i));
+                    leftObjects.add(new ObjectWithClass(objects.get(i)));
                 } else {
-                    rightObjects.add(objects.get(i));
+                    rightObjects.add(new ObjectWithClass(objects.get(i)));
                 }
             }
             node.setLeftChild(styddyNode(node.getLeftChild(), leftObjects, depth + 1));
@@ -185,6 +199,24 @@ public class DecisionTree {
 
     private double square(double x) {
         return x * x;
+    }
+
+    private void getAllSeparatingPlanes(DecisionTreeNode node, ArrayList<SeparatingPlane> allSeparatingPlanes) {
+        if (node.isLeaf()) return;
+        allSeparatingPlanes.add(node.getSeparatingPlane());
+        getAllSeparatingPlanes(node.getLeftChild(), allSeparatingPlanes);
+        getAllSeparatingPlanes(node.getRightChild(), allSeparatingPlanes);
+    }
+
+    public void visualizeTree(ArrayList<ObjectWithClass> objects) throws InterruptedException {
+        VisualiserWindow window = new VisualiserWindow(500, 500);
+        window.setPoints(objects);
+        ArrayList<SeparatingPlane> allSeparatingPlanes = new ArrayList<>();
+        getAllSeparatingPlanes(rootNode, allSeparatingPlanes);
+        window.setSeparatingPlanes(allSeparatingPlanes);
+        window.setDecisionTree(this);
+        Thread windowThread = new Thread(window);
+        windowThread.start();
     }
 
 }
