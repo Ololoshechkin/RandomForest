@@ -11,17 +11,18 @@ import java.util.Scanner;
 public class Main {
 
     private static int getClass(double x, double y) {
+        if (0.75 - x <= y && y <= 0.92 - x) return 3;
         if ((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5) <= 0.1)
             return 2;
         return (y >= -(x - 0.5) * (x - 0.5) + 0.5 ? 1 : 0);
     }
 
     private static int getNumberOfClasses() {
-        return 3;
+        return 4;
     }
 
     private static int getStyddyingSamplesNumber() {
-        return 5000;
+        return 10000;
     }
 
     private static int getValidationSamplesNumber() {
