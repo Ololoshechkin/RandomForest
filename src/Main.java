@@ -50,7 +50,7 @@ public class Main {
             curFeaturesVector.setFeature(1, y);
             points.add(new ObjectWithClass(curFeaturesVector, classNmb));
         }
-        decisionTree.studdy(points);
+        decisionTree.study(points);
         decisionTree.visualizeTree(points);
         int goodAnswers = 0;
         for (int i = 0; i < ValidationSamplesNumber; ++i) {
