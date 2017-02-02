@@ -9,7 +9,7 @@ public class DecisionTree {
     private int dimentions;
     private int numberOfClasses;
     private DecisionTreeNode rootNode;
-    private int maxDepth = 500;
+    private int maxDepth = 20;
     private double tresholdProbability = 0.99;
     private Random rnd;
     private double infinity = 1e18;
@@ -88,23 +88,15 @@ public class DecisionTree {
         double bestInf = -infinity;
         for (int d : allowedDimentions) {
             int finalD = d;
-            Collections.sort(objects,
-                    new Comparator<ObjectWithClass>() {
-                        @Override
-                        public int compare(ObjectWithClass obj1, ObjectWithClass obj2) {
-                            double coord1 = obj1.getFeaturesVector().getFeature(finalD);
-                            double coord2 = obj2.getFeaturesVector().getFeature(finalD);
-                            return coord1 < coord2 ? -1 : (coord1 == coord2 ? 0 : 1);
-                        }
-                    }
+            Collections.sort(objects, (ObjectWithClass obj1, ObjectWithClass obj2) -> {
+                    double coord1 = obj1.getFeaturesVector().getFeature(finalD);
+                    double coord2 = obj2.getFeaturesVector().getFeature(finalD);
+                    return coord1 < coord2 ? -1 : (coord1 == coord2 ? 0 : 1);
+                }
             );
-            /*ArrayList<ObjectWithClass> leftObjects = new ArrayList<ObjectWithClass>();
-            ArrayList<ObjectWithClass> rightObjects = new ArrayList<ObjectWithClass>();
-            for (int i = 0; i < objects.size(); ++i) {
-                rightObjects.add(objects.get(objects.size() - i - 1));
-            }*/
-            /*double leftJiniIndex = 0.0;
-            double rightJiniIndex = 1.0;
+            double leftJiniIndex = 0.0;
+            double rightJiniIndex = getJiniIndex(objects, 0, objects.size() - 1);
+            double fullJiniIndex = rightJiniIndex;
             double[] leftN = new double[numberOfClasses], rightN = new double[numberOfClasses];
             for (int i = 0; i < numberOfClasses; ++i) {
                 leftN[i] = 0.0;
@@ -113,19 +105,10 @@ public class DecisionTree {
             for (int i = 0; i < objects.size(); ++i) {
                 rightN[objects.get(i).getClassNumber()] += 1.0;
             }
-            for (int i = 0; i < numberOfClasses; ++i) {
-                rightJiniIndex -= square(rightN[i] / (double) objects.size());
-            }*/
             int i = 0;
             while (i <= objects.size()) {
-                double Inf = getJiniIndex(objects, 0, objects.size() - 1) - ((double) i) / ((double) objects.size()) *
-                        getJiniIndex(objects, 0, i - 1)  -
-                        ((double) objects.size() - i) / ((double) objects.size()) * getJiniIndex(objects, i, objects.size() - 1);
-                //System.out.println("Inf = " + Inf + " when i = " + i + " and |objects| : " + objects.size());
-                if (Inf != Inf) {
-                    Scanner sc = new Scanner(System.in);
-                    sc.next();
-                }
+                double Inf = fullJiniIndex - ((double) i) / ((double) objects.size()) * leftJiniIndex  -
+                        ((double) objects.size() - i) / ((double) objects.size()) * rightJiniIndex;
                 if (Inf > bestInf) {
                     bestInf = Inf;
                     bestSeparatingPlane = new SeparatingPlane(
@@ -135,20 +118,27 @@ public class DecisionTree {
                 }
                 if (i == objects.size()) break;
                 double curCoord = objects.get(i).getFeaturesVector().getFeature(d);
-                while (i + 1 < objects.size() && objects.get(i + 1).getFeaturesVector().getFeature(d) == curCoord) {
+                do {
                     ++i;
-                    /*leftJiniIndex *= square(((double) (i - 1)) / ((double) i));
-                    rightJiniIndex *= square(((double) (objects.size() - i - 1)) / ((double) (objects.size() - i)));
-                    int classNmb = objects.get(i).getClassNumber();
-                    leftJiniIndex += square((leftN[classNmb] + 1.0) / (double) i);
-                    rightJiniIndex += square((rightN[classNmb] - 1.0) / (double) (objects.size() - i));
+                    // <recalc indexes>
+                    leftJiniIndex = 1.0 - leftJiniIndex;
+                    rightJiniIndex = 1.0 - rightJiniIndex;
+                    leftJiniIndex *= square((i - 1.0) / (double) i);
+                    rightJiniIndex *= square((objects.size() - i + 1.0) / (objects.size() - i + 0.0));
+                    int classNmb = objects.get(i - 1).getClassNumber();
+                    leftJiniIndex += square((leftN[classNmb] + 1.0) / (i + 0.0)) -
+                            square((leftN[classNmb]) / (i + 0.0));
+                    rightJiniIndex += square((rightN[classNmb] - 1.0) / (objects.size() - i + 0.0)) -
+                            square((rightN[classNmb]) / (objects.size() - i + 0.0));
+                    leftJiniIndex = 1.0 - leftJiniIndex;
+                    rightJiniIndex = 1.0 - rightJiniIndex;
                     leftN[classNmb] += 1.0;
-                    rightN[classNmb] -= 1.0;*/
-                }
-                ++i;
+                    rightN[classNmb] -= 1.0;
+                    // </recalc indexes>
+                } while (i + 1 < objects.size() &&
+                        objects.get(i + 1).getFeaturesVector().getFeature(d) == curCoord);
             }
         }
-        //System.out.println("plane : index = " + bestSeparatingPlane.getDimentionNumber() +" , treshold = " + bestSeparatingPlane.getTresholdValue());
         return bestSeparatingPlane;
     }
 
@@ -159,7 +149,6 @@ public class DecisionTree {
             probabilities.add(new Double(.0));
         }
         for (int i = 0; i < objects.size(); ++i) {
-            //System.out.println("class:" + objects.get(i).getClassNumber());
             probabilities.set(
                     objects.get(i).getClassNumber(),
                     probabilities.get(objects.get(i).getClassNumber()) + 1.0
@@ -167,17 +156,12 @@ public class DecisionTree {
         }
         for (int i = 0; i < numberOfClasses; ++i) {
             probabilities.set(i, probabilities.get(i) / (double) objects.size());
-            //System.out.print("P[" + i + "] = " + probabilities.get(i) + " ");
-            if (probabilities.get(i) > tresholdProbability) {
+            if (probabilities.get(i) > tresholdProbability)
                 isLeaf = true;
-                //System.out.println(" > tresholdProbability in depth : " + depth + " , and equals : " + probabilities.get(i) + " (for class : " + i + ")");
-            }
         }
-        //System.out.println();
         node.setProbabilities(probabilities);
         if (isLeaf) {
             node.setIsLeaf(true);
-            //System.out.println("leaf in depth = " + depth);
         } else {
             SeparatingPlane currentSeparatingPlane = getSeparatingPlane(objects);
             node.setSeparatingPlane(currentSeparatingPlane);

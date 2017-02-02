@@ -52,7 +52,13 @@ public class Main {
         }
         decisionTree.study(points);
         decisionTree.visualizeTree(points);
+        RandomForest randomForest = new RandomForest();
+        randomForest.setDimentions(2);
+        randomForest.setNumberOfClasses(NumberOfClasses);
+        randomForest.setTreesCommiteeSize(10);
+        randomForest.studdy(points);
         int goodAnswers = 0;
+        int goodForestAnswers = 0;
         for (int i = 0; i < ValidationSamplesNumber; ++i) {
             double x = rnd.nextDouble(), y = rnd.nextDouble();
             int expectedClassNmb = getClass(x, y);
@@ -60,9 +66,12 @@ public class Main {
             curFeaturesVector.setFeature(0, x);
             curFeaturesVector.setFeature(1, y);
             int curAns = decisionTree.getClassByObject(curFeaturesVector);
+            int curForestAns = randomForest.getClassByObject(curFeaturesVector);
             goodAnswers += (curAns == expectedClassNmb ? 1 : 0);
+            goodForestAnswers += (curForestAns == expectedClassNmb ? 1 : 0);
         }
-        System.out.println("correct : " + 100.0 * (double) goodAnswers / ValidationSamplesNumber + "%");
+        System.out.println("one tree  :  correct : " + 100.0 * (double) goodAnswers / ValidationSamplesNumber + "%");
+        System.out.println("forest  :  correct : " + 100.0 * (double) goodForestAnswers / ValidationSamplesNumber + "%");
         System.out.println("now start entering your points (x, y) from 0.0 to 1.0:");
         while (true) {
             String xString, yString;
